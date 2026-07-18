@@ -1,4 +1,14 @@
-# Open WebUI 👋
+# Open WebUI Scientific Vision Knowledge Fork
+
+[![Vision Knowledge Tests](https://github.com/Yuano0o/open-webui/actions/workflows/vision-knowledge.yaml/badge.svg?branch=feature%2Fscientific-vision-knowledge)](https://github.com/Yuano0o/open-webui/actions/workflows/vision-knowledge.yaml)
+![Upstream version](https://img.shields.io/badge/upstream-v0.10.2-555555)
+![Development branch](https://img.shields.io/badge/branch-feature%2Fscientific--vision--knowledge-0969da)
+
+[My contributions](#my-contributions) ·
+[Architecture](#architecture) ·
+[Installation](#installation-options) ·
+[Contribution boundary](./CONTRIBUTIONS.md) ·
+[Official Open WebUI README](#official-open-webui-readme)
 
 > [!IMPORTANT]
 > This is a portfolio and research-development fork of
@@ -7,7 +17,7 @@
 > with the Open WebUI project. The fork-specific work is documented in
 > [CONTRIBUTIONS.md](./CONTRIBUTIONS.md).
 
-## Scientific Vision Knowledge Extension
+## Fork overview
 
 This fork explores a two-stage retrieval workflow for scientific figures:
 
@@ -22,7 +32,7 @@ This fork explores a two-stage retrieval workflow for scientific figures:
 The implementation deliberately starts with text retrieval over visual
 descriptions. It does not add CLIP, SigLIP, or another image-embedding database.
 
-### Fork-specific features
+### My contributions
 
 | Area                        | Implementation                                                                                              |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -37,6 +47,16 @@ The extension is experimental engineering work, not an official Open WebUI
 feature or a production support offering. See
 [VISION_KNOWLEDGE.md](./VISION_KNOWLEDGE.md) for configuration, limitations,
 privacy notes, and validation steps.
+
+### Validation status
+
+- Focused backend and vision-loader tests pass locally and in GitHub Actions.
+- The Node.js 22 production frontend build passes locally and in GitHub Actions.
+- A disposable local knowledge base verified image upload, Claude visual
+  extraction, searchable content generation, metadata persistence, indexing,
+  knowledge-file linking, and byte-identical original-image retrieval.
+- End-to-end retrieval-time image attachment remains pending because the live
+  API-key retrieval request currently receives a `403` access-control response.
 
 ### Architecture
 
@@ -143,6 +163,19 @@ CONTRIBUTIONS.md                                      Upstream/custom contributi
   included in the model instruction.
 - Do not upload confidential or regulated images unless the configured model
   provider and deployment satisfy the applicable data-handling requirements.
+
+---
+
+<a id="official-open-webui-readme"></a>
+
+## Official Open WebUI README
+
+> [!NOTE]
+> The remainder of this document is the upstream Open WebUI README, retained so
+> the original project's documentation, attribution, installation guidance, and
+> community links remain available. Fork-specific claims end above this note.
+
+# Open WebUI 👋
 
 ![GitHub stars](https://img.shields.io/github/stars/open-webui/open-webui?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/open-webui/open-webui?style=social)
