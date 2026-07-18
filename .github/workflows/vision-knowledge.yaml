@@ -1,36 +1,55 @@
 name: Vision Knowledge Tests
 
 on:
+  workflow_dispatch:
   push:
-    branches: [main, dev]
+    branches: [agent/vision-release-validation]
     paths:
-      - "backend/open_webui/retrieval/loaders/image_vision.py"
-      - "backend/open_webui/retrieval/source_identity.py"
-      - "backend/open_webui/retrieval/vision.py"
-      - "backend/open_webui/routers/files.py"
-      - "backend/open_webui/routers/retrieval.py"
-      - "backend/open_webui/utils/middleware.py"
-      - "backend/open_webui/test/retrieval/**"
-      - "services/image-vision-loader/**"
-      - ".github/workflows/vision-knowledge.yaml"
+      - 'backend/open_webui/retrieval/loaders/image_vision.py'
+      - 'backend/open_webui/retrieval/source_identity.py'
+      - 'backend/open_webui/retrieval/vision.py'
+      - 'backend/open_webui/routers/files.py'
+      - 'backend/open_webui/routers/retrieval.py'
+      - 'backend/open_webui/utils/middleware.py'
+      - 'backend/open_webui/test/retrieval/**'
+      - 'src/lib/components/workspace/Knowledge/KnowledgeBase.svelte'
+      - 'services/image-vision-loader/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/vision-knowledge.yaml'
   pull_request:
     branches: [main, dev]
     paths:
-      - "backend/open_webui/retrieval/loaders/image_vision.py"
-      - "backend/open_webui/retrieval/source_identity.py"
-      - "backend/open_webui/retrieval/vision.py"
-      - "backend/open_webui/routers/files.py"
-      - "backend/open_webui/routers/retrieval.py"
-      - "backend/open_webui/utils/middleware.py"
-      - "backend/open_webui/test/retrieval/**"
-      - "services/image-vision-loader/**"
-      - ".github/workflows/vision-knowledge.yaml"
+      - 'backend/open_webui/retrieval/loaders/image_vision.py'
+      - 'backend/open_webui/retrieval/source_identity.py'
+      - 'backend/open_webui/retrieval/vision.py'
+      - 'backend/open_webui/routers/files.py'
+      - 'backend/open_webui/routers/retrieval.py'
+      - 'backend/open_webui/utils/middleware.py'
+      - 'backend/open_webui/test/retrieval/**'
+      - 'services/image-vision-loader/**'
+      - '.github/workflows/vision-knowledge.yaml'
 
 concurrency:
   group: vision-knowledge-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  frontend-build:
+    name: Frontend production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Build frontend
+        run: npm run build
+
   vision-service:
     name: Vision loader unit tests
     runs-on: ubuntu-latest
@@ -39,7 +58,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: '3.12'
           cache: pip
           cache-dependency-path: services/image-vision-loader/pyproject.toml
       - name: Install service test dependencies
@@ -55,7 +74,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: '3.12'
           cache: pip
           cache-dependency-path: pyproject.toml
       - name: Install Open WebUI and test dependencies
@@ -63,7 +82,7 @@ jobs:
       - name: Run focused integration tests
         env:
           DATA_DIR: /tmp/open-webui-vision-tests
-          PYTHONDONTWRITEBYTECODE: "1"
+          PYTHONDONTWRITEBYTECODE: '1'
           WEBUI_SECRET_KEY: ci-test-only-not-a-production-secret-0123456789abcdef
         run: >-
           pytest -q
