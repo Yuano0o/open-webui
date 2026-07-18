@@ -1,5 +1,149 @@
 # Open WebUI 👋
 
+> [!IMPORTANT]
+> This is a portfolio and research-development fork of
+> [Open WebUI](https://github.com/open-webui/open-webui), currently based on
+> Open WebUI `v0.10.2`. Upstream functionality, branding, and licensing remain
+> with the Open WebUI project. The fork-specific work is documented in
+> [CONTRIBUTIONS.md](./CONTRIBUTIONS.md).
+
+## Scientific Vision Knowledge Extension
+
+This fork explores a two-stage retrieval workflow for scientific figures:
+
+1. A JPEG, PNG, or WebP figure is preserved in Open WebUI storage.
+2. A local vision-loader service asks a configured vision model for OCR and a
+   structured, uncertainty-aware description.
+3. That description and scalar paper metadata are indexed by the existing text
+   vector database.
+4. When retrieval finds the figure, Open WebUI checks file access again and can
+   attach the original pixels to a vision-capable model for grounded inspection.
+
+The implementation deliberately starts with text retrieval over visual
+descriptions. It does not add CLIP, SigLIP, or another image-embedding database.
+
+### Fork-specific features
+
+| Area                        | Implementation                                                                                              |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Image ingestion             | Accepts JPEG, PNG, and WebP, validates signatures, and preserves the original file.                         |
+| Scientific extraction       | Produces OCR, caption, panel, axis, trend, label, and blot/gel-lane fields with explicit uncertainty.       |
+| Retrieval-time vision       | Reattaches authorized source images only for models declaring vision capability.                            |
+| Knowledge UI                | Source builds preview the original image beside its searchable description.                                 |
+| Document identity           | Prefixes vector chunks with source filenames and stable paper/Figure identifiers so they survive splitting. |
+| Desktop development overlay | Provides a version-checked, backed-up, reversible backend overlay for Open WebUI Desktop `0.10.2` on macOS. |
+
+The extension is experimental engineering work, not an official Open WebUI
+feature or a production support offering. See
+[VISION_KNOWLEDGE.md](./VISION_KNOWLEDGE.md) for configuration, limitations,
+privacy notes, and validation steps.
+
+### Architecture
+
+```mermaid
+flowchart LR
+    upload["Scientific image upload"] --> storage["Open WebUI file storage"]
+    upload --> loader["Local vision-loader service"]
+    loader --> provider["Open WebUI vision model or Anthropic API"]
+    provider --> description["Validated OCR and figure description"]
+    description --> vectors["Existing text vector database"]
+    query["User query"] --> vectors
+    vectors --> access["File access check"]
+    storage --> access
+    access --> model["Vision-capable answer model"]
+```
+
+### Installation options
+
+#### Source development
+
+Use Python 3.11 or 3.12 and Node.js 22, matching the upstream project ranges.
+
+```bash
+git clone https://github.com/Yuano0o/open-webui.git
+cd open-webui
+
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+
+npm install --force
+npm run dev
+```
+
+Run the backend separately during development:
+
+```bash
+source .venv/bin/activate
+./backend/dev.sh
+```
+
+Install and test the isolated vision-loader service:
+
+```bash
+pip install -e 'services/image-vision-loader[test]'
+./services/image-vision-loader/store-key-in-keychain.zsh
+./services/image-vision-loader/run-local.zsh
+```
+
+The Keychain helper and LaunchAgent scripts are macOS-specific. The Python
+service itself is portable when its environment variables are supplied by
+another secret manager.
+
+#### Open WebUI Desktop 0.10.2 development overlay
+
+```bash
+./scripts/install-vision-knowledge-overlay.zsh
+./scripts/install-vision-loader-launch-agent.zsh
+```
+
+The overlay backs up every Python file it replaces and refuses unsupported
+Open WebUI versions. It installs backend behavior only; the Svelte image-preview
+UI requires a normal source build. Restore the previous runtime with:
+
+```bash
+./scripts/restore-vision-knowledge-overlay.zsh
+```
+
+### Development checks
+
+```bash
+pytest -q services/image-vision-loader/tests
+pytest -q backend/open_webui/test/retrieval
+npm run check
+npm run test:frontend
+```
+
+Focused GitHub Actions coverage is defined in
+[vision-knowledge.yaml](./.github/workflows/vision-knowledge.yaml).
+
+### Fork-specific project structure
+
+```text
+backend/open_webui/retrieval/loaders/image_vision.py  Open WebUI loader client
+backend/open_webui/retrieval/source_identity.py       Chunk identity and metadata helpers
+backend/open_webui/retrieval/vision.py                Retrieval-time image attachment
+services/image-vision-loader/                         Local vision analysis service
+scripts/install-vision-knowledge-overlay.zsh          Reversible Desktop backend overlay
+VISION_KNOWLEDGE.md                                   Operations and limitations
+CONTRIBUTIONS.md                                      Upstream/custom contribution boundary
+```
+
+### Privacy and security
+
+- API keys are read from environment variables or macOS Keychain and must not
+  be committed.
+- Original image pixels are sent to the selected vision provider during
+  ingestion and may be sent again to the answer model after retrieval.
+- The local loader listens on `127.0.0.1`; optional service authentication is
+  available through `VISION_LOADER_API_KEY` and `IMAGE_VISION_LOADER_API_KEY`.
+- Retrieval reuses Open WebUI ownership, administrator, and explicit read-grant
+  checks before reading original files.
+- Only JPEG, PNG, and WebP data URLs are attached; internal file IDs are not
+  included in the model instruction.
+- Do not upload confidential or regulated images unless the configured model
+  provider and deployment satisfy the applicable data-handling requirements.
+
 ![GitHub stars](https://img.shields.io/github/stars/open-webui/open-webui?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/open-webui/open-webui?style=social)
 ![GitHub watchers](https://img.shields.io/github/watchers/open-webui/open-webui?style=social)
