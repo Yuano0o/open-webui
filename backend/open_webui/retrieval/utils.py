@@ -42,6 +42,7 @@ from open_webui.models.notes import Notes
 from open_webui.models.config import Config
 from open_webui.models.users import UserModel
 from open_webui.retrieval.loaders.youtube import YoutubeLoader
+from open_webui.retrieval.source_identity import build_file_source_metadata
 from open_webui.retrieval.vector.async_client import ASYNC_VECTOR_DB_CLIENT
 from open_webui.retrieval.external import retrieve_external_knowledge
 from open_webui.retrieval.vector.factory import VECTOR_DB_CLIENT
@@ -1434,11 +1435,11 @@ async def get_sources_from_items(
                             'documents': [[file_object.data.get('content', '')]],
                             'metadatas': [
                                 [
-                                    {
-                                        'file_id': item.get('id'),
-                                        'name': file_object.filename,
-                                        'source': file_object.filename,
-                                    }
+                                    build_file_source_metadata(
+                                        file_object.meta,
+                                        file_id=item.get('id'),
+                                        filename=file_object.filename,
+                                    )
                                 ]
                             ],
                         }
@@ -1508,11 +1509,11 @@ async def get_sources_from_items(
                             for file in files:
                                 documents.append(file.data.get('content', ''))
                                 metadatas.append(
-                                    {
-                                        'file_id': file.id,
-                                        'name': file.filename,
-                                        'source': file.filename,
-                                    }
+                                    build_file_source_metadata(
+                                        file.meta,
+                                        file_id=file.id,
+                                        filename=file.filename,
+                                    )
                                 )
 
                             query_result = {

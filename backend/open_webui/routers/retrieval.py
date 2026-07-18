@@ -64,6 +64,7 @@ from open_webui.models.config import Config
 
 # Document loaders
 from open_webui.retrieval.loaders.youtube import YoutubeLoader
+from open_webui.retrieval.source_identity import add_source_identity_to_chunks
 from open_webui.retrieval.utils import (
     build_loader_from_config,
     get_loader_config,
@@ -1706,6 +1707,14 @@ def save_docs_to_vector_db(
 
     if len(docs) == 0:
         raise ValueError(ERROR_MESSAGES.EMPTY_CONTENT)
+
+    # Embeddings are generated from page_content only; metadata such as the
+    # filename is not part of the embedded text.  For long knowledge-base
+    # documents this made identifier queries (for example, "RV04") retrieve
+    # only the YAML front matter because later chunks no longer contained the
+    # identifier.  Prefix every chunk with its source name so all chunks remain
+    # discoverable by document id while preserving the original file content.
+    docs = add_source_identity_to_chunks(docs)
 
     texts = [sanitize_text_for_db(doc.page_content) for doc in docs]
     metadatas = [
