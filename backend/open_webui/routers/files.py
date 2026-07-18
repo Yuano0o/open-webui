@@ -40,6 +40,10 @@ from open_webui.models.files import (
 from open_webui.models.groups import Groups
 from open_webui.models.knowledge import Knowledges
 from open_webui.models.users import Users
+from open_webui.retrieval.loaders.image_vision import (
+    SUPPORTED_IMAGE_TYPES,
+    load_image_with_vision,
+)
 from open_webui.retrieval.vector.async_client import ASYNC_VECTOR_DB_CLIENT
 from open_webui.routers.audio import transcribe
 from open_webui.routers.retrieval import ProcessFileForm, process_file
@@ -140,6 +144,55 @@ async def process_uploaded_file(
                 await process_file(
                     request,
                     ProcessFileForm(file_id=file_item.id, content=result.get('text', '')),
+                    user=user,
+                    db=db_session,
+                )
+
+            elif content_type in SUPPORTED_IMAGE_TYPES:
+                # Scientific images: preserve the original file, create a searchable
+                # Claude vision description, and retain metadata that can be used to
+                # re-attach the original pixels after a RAG hit.
+                resolved_path = await asyncio.to_thread(Storage.get_file, file_path)
+                vision_doc = await load_image_with_vision(
+                    file_path=resolved_path,
+                    filename=file_item.filename,
+                    media_type=content_type,
+                    metadata=file_metadata,
+                )
+                vision_analysis = vision_doc.metadata.pop('vision_analysis', None)
+                supplied_caption = file_metadata.get('caption')
+                indexed_content = vision_doc.page_content
+                if isinstance(supplied_caption, str) and supplied_caption.strip():
+                    indexed_content = (
+                        f'{indexed_content}\n\n## Supplied paper caption\n'
+                        f'{supplied_caption.strip()}'
+                    )
+                vision_metadata = {
+                    **vision_doc.metadata,
+                    'kind': 'vision_figure',
+                    'image_file_id': file_item.id,
+                    'file_id': file_item.id,
+                }
+                for key in ('asset_type', 'asset_no', 'paper_title'):
+                    value = file_metadata.get(key)
+                    if isinstance(value, str) and value:
+                        vision_metadata[key] = value
+                await Files.update_file_metadata_by_id(
+                    file_item.id,
+                    vision_metadata,
+                    db=db_session,
+                )
+                if vision_analysis is not None:
+                    # Keep the structured response in the relational file record.
+                    # Vector stores such as Chroma only accept scalar metadata.
+                    await Files.update_file_data_by_id(
+                        file_item.id,
+                        {'vision_analysis': vision_analysis},
+                        db=db_session,
+                    )
+                await process_file(
+                    request,
+                    ProcessFileForm(file_id=file_item.id, content=indexed_content),
                     user=user,
                     db=db_session,
                 )
