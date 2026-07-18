@@ -47,6 +47,7 @@ from open_webui.models.models import Models
 from open_webui.models.oauth_sessions import OAuthSessions
 from open_webui.models.users import UserModel, Users
 from open_webui.retrieval.utils import get_sources_from_items
+from open_webui.retrieval.vision import inject_retrieved_vision_images
 from open_webui.routers.images import (
     CreateImageForm,
     EditImageForm,
@@ -2806,6 +2807,16 @@ async def process_chat_payload(request, form_data, user, metadata, model):
     # If context is not empty, insert it into the messages
     if sources and prompt:
         form_data['messages'] = await apply_source_context_to_messages(request, form_data['messages'], sources, prompt)
+
+    # Text retrieval finds the candidate figure; a vision-capable model then
+    # receives the authorized original pixels for grounded re-inspection.
+    model_capabilities = (model.get('info', {}).get('meta', {}).get('capabilities') or {})
+    if sources and model_capabilities.get('vision', False):
+        attached_vision_images = await inject_retrieved_vision_images(
+            form_data['messages'], sources, user
+        )
+        if attached_vision_images:
+            metadata['retrieved_vision_images'] = attached_vision_images
 
     # If there are citations, add them to the data_items
     sources = [
