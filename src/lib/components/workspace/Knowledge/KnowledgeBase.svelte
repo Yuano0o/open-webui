@@ -26,6 +26,7 @@
 		uploadFile,
 		deleteFileById,
 		getFileById,
+		getFileContentById,
 		renameFileById
 	} from '$lib/apis/files';
 	import {
@@ -117,6 +118,8 @@
 	let selectedFile = null;
 	let selectedFileContent = '';
 	let loadingFileContent = false;
+	let selectedFilePreviewUrl = '';
+	let loadingFilePreview = false;
 
 	let inputFiles = null;
 
@@ -150,6 +153,47 @@
 	} | null = null;
 
 	$: isExternalKnowledge = knowledge?.meta?.source === 'external';
+	$: if (selectedFileId === null && (selectedFilePreviewUrl || loadingFilePreview)) {
+		clearSelectedFilePreview();
+	}
+
+	const isImageFile = (file) => {
+		const contentType = file?.meta?.content_type ?? file?.data?.content_type ?? '';
+		const filename = file?.meta?.name ?? file?.filename ?? file?.name ?? '';
+
+		return contentType.startsWith('image/') || /\.(?:jpe?g|png|webp)$/i.test(filename);
+	};
+
+	const clearSelectedFilePreview = () => {
+		if (selectedFilePreviewUrl) {
+			URL.revokeObjectURL(selectedFilePreviewUrl);
+			selectedFilePreviewUrl = '';
+		}
+		loadingFilePreview = false;
+	};
+
+	const loadSelectedFilePreview = async (file) => {
+		clearSelectedFilePreview();
+		if (!file?.id || !isImageFile(file)) return;
+
+		const fileId = file.id;
+		loadingFilePreview = true;
+		try {
+			const content = await getFileContentById(fileId);
+			if (selectedFileId !== fileId || !content) return;
+
+			const contentType = file?.meta?.content_type ?? file?.data?.content_type ?? 'image/jpeg';
+			selectedFilePreviewUrl = URL.createObjectURL(new Blob([content], { type: contentType }));
+		} catch (e) {
+			if (selectedFileId === fileId) {
+				toast.error($i18n.t('Failed to download image'));
+			}
+		} finally {
+			if (selectedFileId === fileId) {
+				loadingFilePreview = false;
+			}
+		}
+	};
 
 	const reset = () => {
 		currentPage = 1;
@@ -256,6 +300,7 @@
 		selectedFile = file;
 		selectedFileContent = file?.data?.content ?? '';
 		loadingFileContent = false;
+		loadSelectedFilePreview(file);
 
 		if (!file?.id || file?.data?.content !== undefined) {
 			return;
@@ -267,6 +312,9 @@
 			if (selectedFileId === file.id) {
 				selectedFile = fileWithContent ?? file;
 				selectedFileContent = fileWithContent?.data?.content ?? '';
+				if (!selectedFilePreviewUrl && !loadingFilePreview && isImageFile(selectedFile)) {
+					loadSelectedFilePreview(selectedFile);
+				}
 			}
 		} catch (e) {
 			if (selectedFileId === file.id) {
@@ -1132,6 +1180,7 @@
 
 	onDestroy(() => {
 		clearTimeout(searchDebounceTimer);
+		clearSelectedFilePreview();
 		if (pendingPollTimer) {
 			clearInterval(pendingPollTimer);
 			pendingPollTimer = null;
@@ -1663,13 +1712,58 @@
 										</div>
 
 										{#key selectedFile?.id}
-											<textarea
-												class="w-full h-full text-sm outline-none resize-none px-3 py-2"
-												bind:value={selectedFileContent}
-												disabled={!knowledge?.write_access || loadingFileContent}
-												aria-label={$i18n.t('File content')}
-												placeholder={$i18n.t('Add content here')}
-											></textarea>
+											<div class="flex flex-col min-h-0 flex-1">
+												{#if isImageFile(selectedFile)}
+													<div class="shrink-0 px-3 pb-3">
+														<div
+															class="relative flex items-center justify-center min-h-32 max-h-80 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-900"
+														>
+															{#if loadingFilePreview}
+																<Spinner className="size-5" />
+															{:else if selectedFilePreviewUrl}
+																<button
+																	type="button"
+																	class="flex max-h-80 w-full cursor-zoom-in items-center justify-center"
+																	aria-label={$i18n.t('Show image preview')}
+																	on:click={() => window.open(selectedFilePreviewUrl, '_blank')}
+																>
+																	<img
+																		src={selectedFilePreviewUrl}
+																		alt={selectedFile?.meta?.name ??
+																			selectedFile?.filename ??
+																			'Knowledge image'}
+																		class="max-h-80 max-w-full object-contain"
+																	/>
+																</button>
+															{:else}
+																<div class="text-xs text-gray-500">
+																	{$i18n.t('Failed to download image')}
+																</div>
+															{/if}
+														</div>
+														{#if selectedFilePreviewUrl}
+															<button
+																type="button"
+																class="mt-1.5 text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white"
+																on:click={() => window.open(selectedFilePreviewUrl, '_blank')}
+															>
+																{$i18n.t('Show image preview')}
+															</button>
+														{/if}
+													</div>
+													<div class="shrink-0 px-3 pb-1 text-xs font-medium text-gray-500">
+														{$i18n.t('Description')}
+													</div>
+												{/if}
+
+												<textarea
+													class="w-full min-h-0 flex-1 text-sm outline-none resize-none px-3 py-2"
+													bind:value={selectedFileContent}
+													disabled={!knowledge?.write_access || loadingFileContent}
+													aria-label={$i18n.t('File content')}
+													placeholder={$i18n.t('Add content here')}
+												></textarea>
+											</div>
 										{/key}
 									</div>
 								</div>
