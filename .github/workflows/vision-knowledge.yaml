@@ -3,7 +3,7 @@ name: Vision Knowledge Tests
 on:
   workflow_dispatch:
   push:
-    branches: [agent/vision-release-validation]
+    branches: [feature/scientific-vision-knowledge]
     paths:
       - 'backend/open_webui/retrieval/loaders/image_vision.py'
       - 'backend/open_webui/retrieval/source_identity.py'
