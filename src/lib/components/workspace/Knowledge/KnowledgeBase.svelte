@@ -157,7 +157,7 @@
 		clearSelectedFilePreview();
 	}
 
-	const isImageFile = (file) => {
+	const isImageFile = (file: any) => {
 		const contentType = file?.meta?.content_type ?? file?.data?.content_type ?? '';
 		const filename = file?.meta?.name ?? file?.filename ?? file?.name ?? '';
 
@@ -172,7 +172,7 @@
 		loadingFilePreview = false;
 	};
 
-	const loadSelectedFilePreview = async (file) => {
+	const loadSelectedFilePreview = async (file: any) => {
 		clearSelectedFilePreview();
 		if (!file?.id || !isImageFile(file)) return;
 
