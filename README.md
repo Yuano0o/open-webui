@@ -1,3 +1,14 @@
+## 🔧 This fork: Knowledge Batch Uploader
+
+This branch adds command-line tools for bulk-uploading files into an Open
+WebUI Knowledge base, instead of using the drag-and-drop UI one file at a
+time. See [`tools/knowledge-uploader/README.md`](tools/knowledge-uploader/README.md)
+for what it does and how to use it.
+
+Everything below this section is the original Open WebUI project README.
+
+---
+
 # Open WebUI 👋
 
 ![GitHub stars](https://img.shields.io/github/stars/open-webui/open-webui?style=social)
