@@ -1,3 +1,15 @@
+## 🎨 This fork: Desktop Theme Patch
+
+This branch adds a toolkit for patching the Open WebUI Desktop app's ASAR
+archive to apply a custom font and reading theme, since the app has no
+built-in theming option. See
+[`tools/desktop-theme-patch/README.md`](tools/desktop-theme-patch/README.md)
+for what it does and how to use it.
+
+Everything below this section is the original Open WebUI project README.
+
+---
+
 # Open WebUI 👋
 
 ![GitHub stars](https://img.shields.io/github/stars/open-webui/open-webui?style=social)
