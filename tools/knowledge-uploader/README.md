@@ -1,37 +1,29 @@
 # Open WebUI Knowledge Batch Uploader
 
-Command-line tools for populating an [Open WebUI](https://github.com/open-webui/open-webui)
-Knowledge base from a prepared local folder of scientific-literature assets
-(figures, tables, and Markdown/CSV text) — built while running a
-large personal research knowledge base on top of Open WebUI, where papers
-needed to be re-uploaded repeatedly as the extraction schema evolved.
+Command-line tools that upload a folder of files into an
+[Open WebUI](https://github.com/open-webui/open-webui) Knowledge base.
 
 ## Why
 
-Open WebUI's Knowledge UI is drag-and-drop only, which does not scale once a
-collection reaches hundreds of files across dozens of source papers, or when
-the same collection needs to be re-uploaded after every schema change.
-These scripts make that workflow idempotent, scriptable, and safe to re-run.
+Open WebUI's Knowledge page only supports drag-and-drop uploads. That is
+slow and error-prone once you have hundreds of files, or need to upload the
+same folder again after changing something upstream. These scripts do the
+same job from the command line, and skip files that are already uploaded.
 
-## What it does
+## What's included
 
-- `batch_upload_images_to_knowledge.py` — uploads figures/tables (`.jpg` /
-  `.png` / `.webp`) from a source directory tree, attaching structured
-  metadata (paper id, DOI, figure/table number, caption, source path,
-  content hash) so the images become searchable, individually citable
-  knowledge items.
-- `batch_upload_knowledge_bundle.py` — uploads the paired Markdown/CSV
-  text representation of the same collection, reading frontmatter for
-  paper id / DOI and skipping anything already uploaded.
-- Both scripts hash file contents and compare against what's already in the
-  target knowledge base, so re-running the same command only uploads what's
-  new — safe to fire after adding a handful of new papers to a
-  multi-hundred-file collection.
-- `run-image-upload.zsh` / `run-bundle-upload.zsh` — thin wrappers that pull
-  the API key from macOS Keychain and forward arguments to the Python
-  scripts.
-- `store-open-webui-api-key.zsh` — stores an Open WebUI API key in macOS
-  Keychain instead of an env var or plaintext file.
+- `batch_upload_images_to_knowledge.py` — uploads images (`.jpg` / `.png` /
+  `.webp`) and attaches metadata (an id, a source label, a caption, the file
+  path, and a content hash) so each image is searchable on its own.
+- `batch_upload_knowledge_bundle.py` — uploads the matching Markdown/CSV
+  text files for the same folder.
+- Both scripts hash each file and check it against what's already in the
+  target knowledge base, so running the same command twice only uploads
+  what's new.
+- `run-image-upload.zsh` / `run-bundle-upload.zsh` — wrapper scripts that
+  read the API key from macOS Keychain and call the Python scripts.
+- `store-open-webui-api-key.zsh` — saves an Open WebUI API key to macOS
+  Keychain, so it isn't stored as plain text.
 
 ## Usage
 
@@ -39,26 +31,26 @@ These scripts make that workflow idempotent, scriptable, and safe to re-run.
 # one-time setup
 ./store-open-webui-api-key.zsh
 
-# upload figures/tables
-./run-image-upload.zsh /path/to/collection/upload_ready/_assets my-knowledge-base
+# upload images
+./run-image-upload.zsh /path/to/folder/upload_ready/_assets my-knowledge-base
 
-# upload the text bundle
-./run-bundle-upload.zsh /path/to/collection/upload_ready my-knowledge-base
+# upload the text files
+./run-bundle-upload.zsh /path/to/folder/upload_ready my-knowledge-base
 
-# dry run first to preview without uploading
-./run-image-upload.zsh /path/to/collection/upload_ready/_assets my-knowledge-base --dry-run
+# preview without uploading
+./run-image-upload.zsh /path/to/folder/upload_ready/_assets my-knowledge-base --dry-run
 ```
 
-Or call the Python scripts directly with `OPEN_WEBUI_API_KEY` set in the
-environment; see `--help` on each for the full option list.
+You can also call the Python scripts directly with `OPEN_WEBUI_API_KEY` set
+in the environment. Run either script with `--help` for all options.
 
-## Expected source layout
+## Expected folder layout
 
 ```
-<collection>/upload_ready/
-├── *.md, *.csv                  # per-paper text, with DOI/paper-id frontmatter
+<folder>/upload_ready/
+├── *.md, *.csv                  # text files, with an id/DOI in the frontmatter
 └── _assets/
-    └── <PAPER_ID>__<doi-with-underscores>/
+    └── <ID>__<doi-with-underscores>/
         ├── figures/<name>.png (+ optional _caption.md)
         └── tables/<name>.png  (+ paired .md table source)
 ```
