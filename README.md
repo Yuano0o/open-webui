@@ -45,7 +45,7 @@ This fork explores a two-stage retrieval workflow for scientific figures:
 The implementation deliberately starts with text retrieval over visual
 descriptions. It does not add CLIP, SigLIP, or another image-embedding database.
 
-### My contributions
+## My contributions
 
 | Area                        | Implementation                                                                                              |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -165,18 +165,24 @@ CONTRIBUTIONS.md                                      Upstream/custom contributi
 
 ### Privacy and security
 
-- API keys are read from environment variables or macOS Keychain and must not
-  be committed.
-- Original image pixels are sent to the selected vision provider during
-  ingestion and may be sent again to the answer model after retrieval.
-- The local loader listens on `127.0.0.1`; optional service authentication is
-  available through `VISION_LOADER_API_KEY` and `IMAGE_VISION_LOADER_API_KEY`.
-- Retrieval reuses Open WebUI ownership, administrator, and explicit read-grant
-  checks before reading original files.
-- Only JPEG, PNG, and WebP data URLs are attached; internal file IDs are not
-  included in the model instruction.
-- Do not upload confidential or regulated images unless the configured model
-  provider and deployment satisfy the applicable data-handling requirements.
+- **Credentials**: API keys are read from environment variables or macOS
+  Keychain; the repository never stores them.
+- **Third-party data flow**: image pixels are sent to the configured vision
+  provider during ingestion, and may be sent again to the answer model when
+  the image is retrieved.
+- **Network exposure**: the local vision-loader service binds to
+  `127.0.0.1` only, with optional bearer-token auth via
+  `VISION_LOADER_API_KEY` / `IMAGE_VISION_LOADER_API_KEY`.
+- **Access control**: retrieval-time image attachment reuses Open WebUI's
+  existing ownership, administrator, and explicit read-grant checks.
+- **Accepted formats**: only JPEG, PNG, and WebP; internal file IDs are
+  never included in model instructions.
+
+> [!WARNING]
+> Don't upload confidential, regulated, or unpublished images unless your
+> chosen model provider and deployment meet your own data-handling
+> requirements — this extension does not add any additional protection
+> beyond what's listed above.
 
 ---
 
