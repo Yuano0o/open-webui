@@ -19,6 +19,17 @@
 > functionality, branding, and licensing remain with the Open WebUI project.
 > The fork-specific work is documented in [CONTRIBUTIONS.md](./CONTRIBUTIONS.md).
 
+## Other branches in this fork
+
+This fork also has two small standalone tools, each on its own branch (not
+merged into this one, since they're unrelated to the vision-knowledge work
+above):
+
+- [`tools/knowledge-uploader`](https://github.com/Yuano0o/open-webui/tree/tools/knowledge-uploader/tools/knowledge-uploader) —
+  CLI tools for bulk-uploading files into an Open WebUI Knowledge base.
+- [`tools/desktop-theme-patch`](https://github.com/Yuano0o/open-webui/tree/tools/desktop-theme-patch/tools/desktop-theme-patch) —
+  a toolkit for patching Open WebUI Desktop's font and reading theme.
+
 ## Fork overview
 
 This fork explores a two-stage retrieval workflow for scientific figures:
