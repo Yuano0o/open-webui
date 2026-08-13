@@ -75,7 +75,11 @@ The current development branch adds the following engineering work.
 - The feature has focused unit coverage but still requires broader cross-model,
   cross-storage, and end-to-end evaluation.
 
-## Future work
+## Future work (not pursued — branch archived)
+
+This branch is archived and no further updates are planned. The items below
+were under consideration while the branch was active and are kept for
+reference, not as a roadmap:
 
 - Add container-first deployment for the vision-loader service.
 - Add integration tests covering upload, indexing, retrieval, access denial,
@@ -85,10 +89,11 @@ The current development branch adds the following engineering work.
 - Add optional image-vector retrieval after the text-first workflow is stable.
 - Rebase each independent change onto newer upstream releases.
 
-## Pull-request strategy
+## Pull-request strategy (not pursued — branch archived)
 
-Large changes should not be proposed as one mixed pull request. After the local
-feature set is stable:
+This section documents the review-friendly workflow that would have been used
+had the fork-specific work been proposed upstream. It was not carried out and
+is kept for reference:
 
 1. Update local `main` from the fork/upstream baseline.
 2. Create a new branch from `main` for one independently reviewable concern.

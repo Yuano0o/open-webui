@@ -11,11 +11,13 @@
 [Official Open WebUI README](#official-open-webui-readme)
 
 > [!IMPORTANT]
-> This is a portfolio and research-development fork of
-> [Open WebUI](https://github.com/open-webui/open-webui), currently based on
-> Open WebUI `v0.10.2`. Upstream functionality, branding, and licensing remain
-> with the Open WebUI project. The fork-specific work is documented in
-> [CONTRIBUTIONS.md](./CONTRIBUTIONS.md).
+> **Status: archived / feature-complete.** This branch is kept as a portfolio
+> and research-development record of a fork of
+> [Open WebUI](https://github.com/open-webui/open-webui), based on
+> Open WebUI `v0.10.2`. It is not under active development and no further
+> updates are planned; it's shared as-is for reference. Upstream
+> functionality, branding, and licensing remain with the Open WebUI project.
+> The fork-specific work is documented in [CONTRIBUTIONS.md](./CONTRIBUTIONS.md).
 
 ## Fork overview
 
@@ -55,8 +57,9 @@ privacy notes, and validation steps.
 - A disposable local knowledge base verified image upload, Claude visual
   extraction, searchable content generation, metadata persistence, indexing,
   knowledge-file linking, and byte-identical original-image retrieval.
-- End-to-end retrieval-time image attachment remains pending because the live
-  API-key retrieval request currently receives a `403` access-control response.
+- End-to-end retrieval-time image attachment was not completed before this
+  branch was archived: the live API-key retrieval request received a `403`
+  access-control response that was not root-caused.
 
 ### Architecture
 
